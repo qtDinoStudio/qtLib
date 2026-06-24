@@ -1,17 +1,11 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace qtLib.Helper
 {
-    public partial class MessageDispatcher : qtSingleton<MessageDispatcher>
+    public partial class MessageDispatcher : MonoBehaviour
     {
-        public enum EEvent
-        {
-            IAPPurchaseSucceeded,
-            OnCoinChanged,
-            SwitchTab,
-        }
-        
         #region ----- Component Config -----
 
         private static Dictionary<EEvent, List<Action<MessageObject>>> _dictListener;
@@ -20,12 +14,11 @@ namespace qtLib.Helper
 
         #region ----- Private Function -----
 
-        protected override void _Init()
+        private void Awake()
         {
-            base._Init();
             _dictListener = new Dictionary<EEvent, List<Action<MessageObject>>>();
         }
-
+        
         #endregion
         
         #region ----- Public Function -----
@@ -55,7 +48,11 @@ namespace qtLib.Helper
         {
             if (_dictListener.ContainsKey(@event))
             {
-                _dictListener[@event].ForEach(listener => listener.Invoke(param));
+                List<Action<MessageObject>> listeners = _dictListener[@event];
+                for (var i = 0; i < listeners.Count; i++)
+                {
+                    listeners[i].Invoke(param);
+                }
             }
         }
 
