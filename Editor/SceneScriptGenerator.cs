@@ -66,7 +66,7 @@ public class SceneScriptGenerator : EditorWindow
 
         if (!string.IsNullOrWhiteSpace(_name))
         {
-            EditorGUILayout.LabelField("Output", GetFolder());
+            EditorGUILayout.LabelField("Folder path: ", GetFolder());
             EditorGUILayout.Space(4);
 
             string suffix = Suffix();
