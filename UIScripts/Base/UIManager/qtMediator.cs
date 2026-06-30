@@ -133,23 +133,23 @@ namespace qtLib.UI.Base
             return _ui.gameObject.activeInHierarchy;
         }
 
-        public qtMediator<TUI, TLogic> ConfigUI(fncVLM func)
-        {
-            _configUI = func;        
-            return this;
-        }
-
-        public qtMediator<TUI, TLogic> BeforeUIShow(fncVLM func)
-        {
-            _beforeUIShow = func;     
-            return this;
-        }
-
-        public qtMediator<TUI, TLogic> AfterUIShow(fncVLM func)
-        {
-            _afterUIShow = func;     
-            return this;
-        }
+        // public qtMediator<TUI, TLogic> ConfigUI(fncVLM func)
+        // {
+        //     _configUI = func;        
+        //     return this;
+        // }
+        //
+        // public qtMediator<TUI, TLogic> BeforeUIShow(fncVLM func)
+        // {
+        //     _beforeUIShow = func;     
+        //     return this;
+        // }
+        //
+        // public qtMediator<TUI, TLogic> AfterUIShow(fncVLM func)
+        // {
+        //     _afterUIShow = func;     
+        //     return this;
+        // }
         
         public qtMediator<TUI, TLogic> SetAdditionSetUp(fncVLM addBeforeConfigUI = null,fncVLM addBeforeUIShow = null, fncVLM addAfterUIShow = null, fncVLM addBeforeUIHide = null)
         {
@@ -165,8 +165,11 @@ namespace qtLib.UI.Base
             _removeEvent = func;
             return this;
         }
-        
-        public qtMediator<TUI, TLogic> SetResult(fncResult_VLM func)   { _forceResult = func; return this; }   
+
+        public qtMediator<TUI, TLogic> SetResult(fncResult_VLM func)
+        {
+            _forceResult = func; return this;
+        }   
 
         public delegate UniTask<ParamOutput> fncResult_VLM(TUI ui, TLogic logic, qtMediator<TUI, TLogic> mediator);
         
@@ -186,36 +189,55 @@ namespace qtLib.UI.Base
                     _ui.onBeforeUIHide = _OnBeforeUIHide;
                     if (_addBeforeConfigUI != null)
                     {
-                        _addBeforeConfigUI?.Invoke(ui, logic, this);
+                        qtDebug.Log($"{this} - _addBeforeConfigUI");
+#if UNITY_EDITOR && !ENABLE_LOG
+                        Debug.Log($"{this} - _addBeforeConfigUI");
+#endif
+                        await _addBeforeConfigUI.Invoke(ui, logic, this);
                     }
-                    
+
                     if (_configUI != null)
                     {
+                        qtDebug.Log($"{this} - _configUI");
+#if UNITY_EDITOR && !ENABLE_LOG
+                        Debug.Log($"{this} - _configUI");
+#endif
                         await _configUI.Invoke(ui, logic, this);
                     }
-                    
+
                     if (_addBeforeUIShow != null)
                     {
+                        qtDebug.Log($"{this} - _addBeforeUIShow");
+#if UNITY_EDITOR && !ENABLE_LOG
+                        Debug.LogError($"{this} - _addBeforeUIShow");
+#endif
                         await _addBeforeUIShow.Invoke(ui, logic, this);
                         _addBeforeUIShow = null;
                     }
-                    
+
                     if (_beforeUIShow != null)
                     {
+                        qtDebug.Log($"{this} - _beforeUIShow");
+#if UNITY_EDITOR && !ENABLE_LOG
+                        Debug.LogError($"{this} - _beforeUIShow");
+#endif
                         await _beforeUIShow.Invoke(ui, logic, this);
                     }
                 });
-                
+
                 //Đoạn này là để hide scene cũ
-                (bool isSuccess, (TUI ui, TLogic logic) data) result = new ();
+                (bool isSuccess, (TUI ui, TLogic logic) data) result = new();
                 try
                 {
                     result.data = await transition.Move(inactivePreviousScene, _param, setAsLastSibling);
                     result.isSuccess = false;
                 }
-                catch (Exception e)  
+                catch (Exception e)
                 {
                     qtDebug.LogError($"{this} - {e.Message}");
+#if UNITY_EDITOR && !ENABLE_LOG
+                    Debug.LogError(e.Message);
+#endif
                     result.isSuccess = true;
                     throw;
                 }
@@ -250,15 +272,25 @@ namespace qtLib.UI.Base
         protected virtual void _OnBeforeUIHide()
         {
             _RefreshToken();
-            _RemoveEvent();
+            _RemoveEvent().Forget();
 
             if (_beforeUIHide != null)
             {
+                qtDebug.Log($"{this} - _beforeUIHide");
+#if UNITY_EDITOR && !ENABLE_LOG
+                Debug.Log($"{this} - _beforeUIHide");
+#endif
                 _beforeUIHide?.Invoke(_ui, _logic, this);
+                _beforeUIHide = null;
             }
 
             if (_addBeforeUIHide != null)
             {
+                qtDebug.Log($"{this} - _addBeforeUIHide");
+#if UNITY_EDITOR && !ENABLE_LOG
+                Debug.Log($"{this} - _addBeforeUIHide");
+#endif
+
                 _addBeforeUIHide?.Invoke(_ui, _logic, this);
                 _addBeforeUIHide = null;
             }
@@ -278,13 +310,22 @@ namespace qtLib.UI.Base
             {
                 if (_addAfterUIShow != null)
                 {
+                    qtDebug.Log($"{this} - _addAfterUIShow");
+#if UNITY_EDITOR && !ENABLE_LOG
+                    Debug.Log($"{this} - _addAfterUIShow");
+#endif
                     await _addAfterUIShow.Invoke(_ui, _logic, this);
                     _addAfterUIShow = null;
                 }
                 
                 if (_afterUIShow != null)
                 {
+                    qtDebug.Log($"{this} - _afterUIShow");
+#if UNITY_EDITOR && !ENABLE_LOG
+                    Debug.Log($"{this} - _afterUIShow");
+#endif
                     await _afterUIShow.Invoke(_ui, _logic, this);
+                    _afterUIShow = null;
                 }
             }
         }
@@ -354,9 +395,18 @@ namespace qtLib.UI.Base
             action?.Invoke();
         }
 
-        private void _RemoveEvent()
+        private async UniTaskVoid _RemoveEvent()
         {
-            _removeEvent?.Invoke(_ui, _logic, this);
+            if (_removeEvent != null)
+            {
+                qtDebug.Log($"{this} - _removeEvent");
+#if UNITY_EDITOR && !ENABLE_LOG
+                Debug.Log($"{this} - _removeEvent");
+#endif
+
+                await _removeEvent.Invoke(_ui, _logic, this);
+            }
+            
             _logic.HideScene();
             
             RemoveEvent();
