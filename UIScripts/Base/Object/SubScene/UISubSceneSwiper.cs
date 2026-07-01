@@ -32,38 +32,27 @@ namespace qtLib.UIScripts.Base.Object.SubScene
         [SerializeField] private float snapDuration = 0.18f;
 
         /// <summary>
-        /// Bắn khi target scene được SetActive(true).
+        /// Bắn khi target subscene được SetActive(true).
         /// Bắn cho cả swipe và GoToIndex.
         /// Param: fromIndex, toIndex.
         /// </summary>
         public event Action<int, int> onNextSubSceneActivated;
 
         /// <summary>
-        /// Bắn khi previous scene đã bị SetActive(false).
+        /// Bắn khi previous subscene đã bị SetActive(false).
         /// Bắn cho cả swipe và GoToIndex.
         /// Param: fromIndex, toIndex.
         /// </summary>
         public event Action<int, int> onPreviousSubSceneHidden;
 
         /// <summary>
-        /// Bắn sau khi chuyển scene hoàn tất.
+        /// Bắn sau khi transition hoàn tất.
         /// Bắn cho cả swipe và GoToIndex.
         /// Param: fromIndex, toIndex.
         /// </summary>
         public event Action<int, int> onTransitionCompleted;
 
-        /// <summary>
-        /// Event cũ để giữ compatibility.
-        /// Bây giờ cũng bắn cho cả swipe và GoToIndex.
-        /// </summary>
-        public event Action<int, int> onSwipeTransitionCompleted;
-
-        /// <summary>
-        /// Event cũ để giữ compatibility.
-        /// Chỉ trả về toIndex.
-        /// </summary>
-        public event Action<int> onActiveNextSubScene;
-
+        
         private int currentIndex;
         private int targetIndex = -1;
 
@@ -83,6 +72,12 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
         public int CurrentIndex => currentIndex;
         public int PageCount => uiObjects == null ? 0 : uiObjects.Length;
+
+        /// <summary>
+        /// True khi đang chạy animation transition.
+        /// User swipe sẽ bị ignore khi property này true.
+        /// </summary>
+        public bool IsTransitioning => isAnimating || animationCts != null;
 
         private void Reset()
         {
@@ -141,7 +136,7 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
             UpdatePageSizes();
 
-            if (!isDragging && !isAnimating)
+            if (!isDragging && !IsTransitioning)
             {
                 ShowOnlyCurrent();
             }
@@ -175,9 +170,11 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                     continue;
                 }
 
+                // Mỗi subscene full theo viewport.
                 page.anchorMin = new Vector2(0f, 0f);
                 page.anchorMax = new Vector2(1f, 1f);
                 page.pivot = new Vector2(0.5f, 0.5f);
+                page.sizeDelta = Vector2.zero;
 
                 page.anchoredPosition = new Vector2(page.anchoredPosition.x, 0f);
             }
@@ -195,7 +192,7 @@ namespace qtLib.UIScripts.Base.Object.SubScene
         }
 
         /// <summary>
-        /// Reset visual.
+        /// Chỉ reset visual.
         /// Không notify trong function này để tránh bắn sai lúc Awake, OnEnable, BeginDrag, swipe fail.
         /// </summary>
         private void ShowOnlyCurrent()
@@ -224,7 +221,7 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
         /// <summary>
         /// Dùng sau khi transition thành công.
-        /// Notify đúng lúc previous scene bị hide.
+        /// Tại đây previous scene thật sự bị hide.
         /// </summary>
         private void ShowCurrentAndHidePrevious(
             int previousIndex,
@@ -305,6 +302,14 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
         private void BeginDragInternal(PointerEventData eventData)
         {
+            // Đang transition thì không cho user swipe cắt ngang.
+            if (IsTransitioning)
+            {
+                isDragging = false;
+                dragMode = DragMode.None;
+                return;
+            }
+
             if (uiObjects == null || uiObjects.Length <= 1)
             {
                 return;
@@ -315,7 +320,8 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 return;
             }
 
-            CancelAnimation();
+            // Không gọi CancelAnimation() ở đây.
+            // Nếu gọi, user drag sẽ hủy transition đang chạy.
 
             UpdatePageSizes();
             ShowOnlyCurrent();
@@ -333,6 +339,11 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 return;
             }
 
+            if (IsTransitioning)
+            {
+                return;
+            }
+
             if (!IsValidIndex(currentIndex))
             {
                 return;
@@ -343,11 +354,14 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
             ResolveDragMode(delta);
 
+            // Nếu đang scroll dọc trong ScrollView con thì không move page.
             if (dragMode != DragMode.Horizontal)
             {
                 return;
             }
 
+            // Khi tay quay gần về điểm bắt đầu, bỏ target cũ.
+            // Nhờ vậy kéo qua phải xong kéo ngược qua trái vẫn đổi hướng được.
             if (Mathf.Abs(delta.x) < detectDirectionPixels)
             {
                 ClearTargetPreview();
@@ -372,6 +386,13 @@ namespace qtLib.UIScripts.Base.Object.SubScene
         {
             if (!isDragging)
             {
+                return;
+            }
+
+            if (IsTransitioning)
+            {
+                isDragging = false;
+                dragMode = DragMode.None;
                 return;
             }
 
@@ -465,6 +486,8 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 return true;
             }
 
+            // Đổi hướng trong cùng một lần drag:
+            // tắt target cũ, bật target mới.
             ClearTargetPreview();
 
             targetOffset = desiredOffset;
@@ -506,11 +529,13 @@ namespace qtLib.UIScripts.Base.Object.SubScene
         {
             if (targetOffset == +1)
             {
+                // Target ở bên phải, kéo từ 0 tới -screenWidth.
                 return Mathf.Clamp(deltaX, -screenWidth, 0f);
             }
 
             if (targetOffset == -1)
             {
+                // Target ở bên trái, kéo từ 0 tới +screenWidth.
                 return Mathf.Clamp(deltaX, 0f, screenWidth);
             }
 
@@ -635,6 +660,8 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 }
                 else
                 {
+                    // Swipe không đủ threshold:
+                    // target preview bị tắt, không notify hide previous, không notify completed.
                     ShowOnlyCurrent();
                 }
 
@@ -647,7 +674,11 @@ namespace qtLib.UIScripts.Base.Object.SubScene
             }
             catch (OperationCanceledException)
             {
-                // Bị cancel do user drag tiếp, disable object, hoặc GoToIndex mới.
+                // Bị cancel bởi GoToIndex mới, Disable object, Destroy object, v.v.
+            }
+            catch (ObjectDisposedException)
+            {
+                // Có thể xảy ra nếu CTS bị dispose trong lúc await.
             }
             finally
             {
@@ -655,9 +686,9 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 {
                     animationCts = null;
                     isAnimating = false;
-                }
 
-                cts.Dispose();
+                    cts.Dispose();
+                }
             }
 
             if (shouldNotifyTransitionCompletedAfterCleanup)
@@ -685,17 +716,21 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 return;
             }
 
+            CancellationTokenSource cts = animationCts;
+            animationCts = null;
+
             try
             {
-                if (!animationCts.IsCancellationRequested)
+                if (!cts.IsCancellationRequested)
                 {
-                    animationCts.Cancel();
+                    cts.Cancel();
                 }
             }
             catch (ObjectDisposedException)
             {
             }
 
+            cts.Dispose();
             isAnimating = false;
         }
 
@@ -707,9 +742,6 @@ namespace qtLib.UIScripts.Base.Object.SubScene
             }
 
             onNextSubSceneActivated?.Invoke(fromIndex, toIndex);
-
-            // Event cũ.
-            onActiveNextSubScene?.Invoke(toIndex);
         }
 
         private void NotifyPreviousSubSceneHidden(int fromIndex, int toIndex)
@@ -730,10 +762,6 @@ namespace qtLib.UIScripts.Base.Object.SubScene
             }
 
             onTransitionCompleted?.Invoke(fromIndex, toIndex);
-
-            // Event cũ.
-            // Tên là swipe, nhưng giờ cũng notify cho GoToIndex để không break code cũ.
-            onSwipeTransitionCompleted?.Invoke(fromIndex, toIndex);
         }
 
         private void SetPageX(int index, float x)
@@ -782,6 +810,9 @@ namespace qtLib.UIScripts.Base.Object.SubScene
         /// 1. onNextSubSceneActivated
         /// 2. onPreviousSubSceneHidden
         /// 3. onTransitionCompleted / onSwipeTransitionCompleted
+        ///
+        /// User swipe bị block khi đang transition,
+        /// nhưng GoToIndex bằng code vẫn được phép override transition hiện tại.
         /// </summary>
         public void GoToIndex(int index, bool animated)
         {
@@ -797,6 +828,7 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 return;
             }
 
+            // Manual call được phép override transition hiện tại.
             CancelAnimation();
 
             isDragging = false;
@@ -816,6 +848,9 @@ namespace qtLib.UIScripts.Base.Object.SubScene
             ShowOnlyCurrent();
 
             targetIndex = newIndex;
+
+            // Index lớn hơn: target nằm bên phải, trượt sang trái.
+            // Index nhỏ hơn: target nằm bên trái, trượt sang phải.
             targetOffset = targetIndex > currentIndex ? +1 : -1;
 
             SetPageX(currentIndex, 0f);
