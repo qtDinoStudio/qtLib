@@ -302,48 +302,27 @@ namespace qtLib.UIScripts.Base.Object.SubScene
         {
             EndDragInternal(eventData);
         }
-
-        /// <summary>
-        /// Dùng khi ScrollView con đã xác định là vertical drag.
-        /// Hủy state swipe đã begin nhưng không trigger transition.
-        /// </summary>
-        public void ForwardCancelDrag()
-        {
-            CancelDragInternal();
-        }
-
+        
         private void BeginDragInternal(PointerEventData eventData)
         {
             CancelPendingClick(eventData);
 
-            // Đang transition thì không cho user swipe cắt ngang.
             if (IsTransitioning)
-            {
-                isDragging = false;
-                dragMode = DragMode.None;
                 return;
-            }
 
             if (uiObjects == null || uiObjects.Length <= 1)
-            {
                 return;
-            }
 
             if (!IsValidIndex(currentIndex))
-            {
                 return;
-            }
-
-            // Không gọi CancelAnimation() ở đây.
-            // Nếu gọi, user drag sẽ hủy transition đang chạy.
 
             UpdatePageSizes();
             ShowOnlyCurrent();
 
-            isDragging = true;
-            dragMode = DragMode.None;
-
             startPointer = GetLocalPointer(eventData);
+
+            dragMode = DragMode.None;
+            isDragging = true;
         }
 
         private void DragInternal(PointerEventData eventData)
@@ -371,11 +350,15 @@ namespace qtLib.UIScripts.Base.Object.SubScene
             ResolveDragMode(delta);
 
             // Đã detect vertical thì không ghi nhận horizontal swipe nữa.
-            if (dragMode != DragMode.Horizontal)
+            if (dragMode == DragMode.Vertical)
             {
                 return;
             }
 
+            if (dragMode == DragMode.None)
+            {
+                return;
+            }
             // Horizontal đã được lock theo trục,
             // nhưng vẫn cho đổi chiều trái/phải trong cùng một lần drag.
             if (Mathf.Abs(delta.x) < detectDirectionPixels)
@@ -407,14 +390,14 @@ namespace qtLib.UIScripts.Base.Object.SubScene
                 return;
             }
 
+            isDragging = false;
+
             if (IsTransitioning)
             {
                 isDragging = false;
                 dragMode = DragMode.None;
                 return;
             }
-
-            isDragging = false;
 
             Vector2 endPointer = GetLocalPointer(eventData);
             Vector2 delta = endPointer - startPointer;
@@ -423,9 +406,15 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
             // Chỉ horizontal mới được xử lý page swipe.
             // Vertical hoặc None thì reset, không trigger transition.
-            if (dragMode != DragMode.Horizontal)
+            if (dragMode == DragMode.Vertical)
             {
                 dragMode = DragMode.None;
+                ShowOnlyCurrent();
+                return;
+            }
+
+            if (dragMode == DragMode.None)
+            {
                 ShowOnlyCurrent();
                 return;
             }
@@ -465,52 +454,23 @@ namespace qtLib.UIScripts.Base.Object.SubScene
             );
         }
 
-        private void CancelDragInternal()
-        {
-            if (!isDragging)
-            {
-                return;
-            }
-
-            if (IsTransitioning)
-            {
-                isDragging = false;
-                dragMode = DragMode.None;
-                return;
-            }
-
-            isDragging = false;
-            dragMode = DragMode.None;
-
-            ClearTargetPreview();
-            ShowOnlyCurrent();
-        }
-
         private void ResolveDragMode(Vector2 delta)
         {
-            // Đã xác định trục rồi thì khóa luôn trong lần drag này.
-            // Horizontal không đổi thành Vertical.
-            // Vertical không đổi thành Horizontal.
             if (dragMode != DragMode.None)
-            {
                 return;
-            }
 
             float absX = Mathf.Abs(delta.x);
             float absY = Mathf.Abs(delta.y);
 
-            if (absX < detectDirectionPixels && absY < detectDirectionPixels)
-            {
+            if (absX < detectDirectionPixels &&
+                absY < detectDirectionPixels)
                 return;
-            }
 
-            if (absX >= detectDirectionPixels && absX >= absY * horizontalDominance)
+            if (absX >= absY * horizontalDominance)
             {
                 dragMode = DragMode.Horizontal;
-                return;
             }
-
-            if (absY >= detectDirectionPixels && absY >= absX * horizontalDominance)
+            else
             {
                 dragMode = DragMode.Vertical;
                 ClearTargetPreview();
@@ -554,7 +514,9 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
         private void ClearTargetPreview()
         {
-            if (IsValidIndex(targetIndex) && targetIndex != currentIndex)
+            if (targetIndex >= 0 &&
+                targetIndex != currentIndex &&
+                IsValidIndex(targetIndex))
             {
                 // Đây chỉ là target preview bị tắt.
                 // Không gọi onPreviousSubSceneHidden ở đây.
@@ -594,7 +556,13 @@ namespace qtLib.UIScripts.Base.Object.SubScene
             bool notifyPreviousHidden
         )
         {
-            if (!IsValidIndex(currentIndex) || !IsValidIndex(targetIndex))
+            if (!IsValidIndex(currentIndex))
+            {
+                ShowOnlyCurrent();
+                return;
+            }
+
+            if (!IsValidIndex(targetIndex))
             {
                 ShowOnlyCurrent();
                 return;
@@ -809,32 +777,18 @@ namespace qtLib.UIScripts.Base.Object.SubScene
 
             onTransitionCompleted?.Invoke(fromIndex, toIndex);
         }
-
+        
         private void CancelPendingClick(PointerEventData eventData)
         {
             if (!cancelClickAfterDrag)
-            {
                 return;
-            }
 
             if (eventData == null)
-            {
                 return;
-            }
 
-            // Chặn click ở cấp EventSystem.
-            // Quan trọng: phải clear từ BeginDrag/Drag, không chỉ EndDrag,
-            // vì một số EventSystem xử lý PointerClick trước EndDrag khi thả tay.
             eventData.eligibleForClick = false;
-            eventData.pointerPress = null;
-            eventData.rawPointerPress = null;
             eventData.clickCount = 0;
             eventData.clickTime = 0f;
-
-            if (EventSystem.current != null)
-            {
-                EventSystem.current.SetSelectedGameObject(null);
-            }
         }
 
         private void SetPageX(int index, float x)

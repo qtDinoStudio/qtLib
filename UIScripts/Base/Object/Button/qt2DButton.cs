@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace qtLib.Object
+namespace qtLib.UIScripts.Base.Object.Button
 {
     [RequireComponent(typeof(Collider2D))]
     public class qt2DButton : MonoBehaviour, IPointerClickHandler
