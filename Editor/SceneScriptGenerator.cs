@@ -243,6 +243,17 @@ public class SceneScriptGenerator : EditorWindow
         sb.AppendLine("{");
         sb.AppendLine($"    public class {cls} : {b}");
         sb.AppendLine("    {");
+        sb.AppendLine("        #region ----- Component Config -----");
+        sb.AppendLine("        #endregion");
+        sb.AppendLine();
+        sb.AppendLine("        #region ----- Properties -----");
+        sb.AppendLine("        #endregion");
+        sb.AppendLine();
+        sb.AppendLine("        #region ----- Public Functions -----");
+        sb.AppendLine("        #endregion");
+        sb.AppendLine();
+        sb.AppendLine("        #region ----- Private Functions -----");
+        sb.AppendLine("        #endregion");
         sb.AppendLine("    }");
         sb.Append("}");
  
@@ -281,15 +292,19 @@ public class SceneScriptGenerator : EditorWindow
             sb.AppendLine();
         }
 
-        if (_type == ScriptType.Popup && _hasOutput)
+        if (_type == ScriptType.Popup && _hasInput)
         {
-            sb.AppendLine($"    public class {logic} : qtLogic<{paramOut}>");
+            sb.AppendLine($"    public class {logic} : qtLogic<{paramIn}>");
         }
         else
         {
             sb.AppendLine($"    public class {logic} : qtLogic");
         }
         sb.AppendLine("    {");
+        sb.AppendLine("        public override UniTask Initialize()");
+        sb.AppendLine("        {");
+        sb.AppendLine("            return base.Initialize();");
+        sb.AppendLine("        }");
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine($"    public class {mediator} : {medBase}");
@@ -298,6 +313,10 @@ public class SceneScriptGenerator : EditorWindow
         sb.AppendLine("        {");
         sb.AppendLine("            _configUI = (ui, logic, mediator) =>");
         sb.AppendLine("            {");
+        if (_hasOutput)
+        {
+            sb.AppendLine("                ui.uiResult = new UniTaskCompletionSource<ParamOutput>();");
+        }
         sb.AppendLine("                return UniTask.CompletedTask;");
         sb.AppendLine("            };");
         sb.AppendLine();
@@ -307,11 +326,22 @@ public class SceneScriptGenerator : EditorWindow
         sb.AppendLine("            };");
         sb.AppendLine("        }");
         sb.AppendLine();
+        sb.AppendLine("        protected override void RemoveEvent()");
+        sb.AppendLine("        {");
+        sb.AppendLine("            base.RemoveEvent();");
+        sb.AppendLine("        }");
+        sb.AppendLine();
+        sb.AppendLine("        #region ----- Button Events -----");
+        sb.AppendLine("        #endregion");
+        sb.AppendLine();
+        sb.AppendLine("        #region ----- Private Functions -----");
+        sb.AppendLine("        #endregion");
+
         if (_hasInput)
         {
-            sb.AppendLine($"        public override UniTask<{paramOut}> RequestData()");
+            sb.AppendLine($"        public override UniTask<{paramIn}> RequestData()");
             sb.AppendLine("        {");
-            sb.AppendLine($"            return UniTask.FromResult(new {paramOut}());");
+            sb.AppendLine($"            return UniTask.FromResult(new {paramIn}());");
             sb.AppendLine("        }");
         }
         sb.AppendLine("    }");

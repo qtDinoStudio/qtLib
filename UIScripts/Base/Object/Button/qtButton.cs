@@ -107,6 +107,10 @@ namespace qtLib.UIScripts.Base.Object.Button
             {
                 _Initialize();
             }
+            if (!_text)
+            {
+                return;
+            }
             _text.SetText(text);
         }
 
@@ -115,6 +119,11 @@ namespace qtLib.UIScripts.Base.Object.Button
             if (!_isInitialized)
             {
                 _Initialize();
+            }
+
+            if (!_text)
+            {
+                return;
             }
             _text.color = color;
         }
