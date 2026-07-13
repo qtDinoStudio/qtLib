@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using qtLib.Game.Object;
 using qtLib.Helper;
+using qtLib.Singleton;
 
-namespace qtLib.Game.Controller
+namespace qtLib.Pooling
 {
     public class SamplePooling : qtSingleton<SamplePooling>
     {
@@ -15,7 +15,7 @@ namespace qtLib.Game.Controller
 
         #region ----- Public Function -----
 
-        public PoolingObject Get(int id)
+        public qtPoolingObject Get(int id)
         {
             if (!_turretPools.ContainsKey(id))
             {
@@ -26,7 +26,7 @@ namespace qtLib.Game.Controller
             return _curPool.Get();
         }
 
-        public void Release(PoolingObject target)
+        public void Release(qtPoolingObject target)
         {
             _curPool.Release(target);
         }

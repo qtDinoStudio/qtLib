@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using qtLib.Helper;
 using UnityEngine;
+using VInspector;
 
 namespace qtLib.UI.UIManager
 {
     public abstract partial class qtUiLoader<TUI> : qtUiLoader where TUI : qtUiObject
     {
-        protected RectTransform _rectCanvas;
+        [ReadOnly] [SerializeField] protected RectTransform _rectCanvas;
         
         private readonly Dictionary<string, TUI> _uiElements = new Dictionary<string, TUI>();
         private readonly Dictionary<string, TUI> _loadedPrefabs = new Dictionary<string, TUI>();

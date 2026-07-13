@@ -16,6 +16,13 @@ namespace qtLib.Extension
         }
 
         #endregion
+
+        #region ----- Event -----
+
+        public static event Action<bool> onApplicationPause;
+        public static event Action<bool> onApplicationFocus;
+
+        #endregion
         
         #region ----- Variables -----
 
@@ -55,6 +62,16 @@ namespace qtLib.Extension
                     _temp.updateCallback?.Invoke(currentTime - _temp.time);
                 }
             }
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            onApplicationPause?.Invoke(pauseStatus);
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            onApplicationFocus?.Invoke(hasFocus);
         }
 
         #endregion

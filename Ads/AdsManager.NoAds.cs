@@ -1,10 +1,16 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 
 namespace qtLib.Ads
 {
     public partial class AdsManager
     {
 #if !INCLUDE_ADS
+
+        public UniTask ManualInit()
+        {
+            return UniTask.CompletedTask;
+        }
 
         #region ----- Banner Ads -----
 

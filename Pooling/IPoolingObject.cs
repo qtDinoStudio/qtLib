@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace qtLib.Game.Object
+namespace qtLib.Pooling
 {
     public interface IPoolingObject
     {

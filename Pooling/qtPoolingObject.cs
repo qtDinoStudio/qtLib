@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace qtLib.Game.Object
+namespace qtLib.Pooling
 {
-    public abstract class PoolingObject : MonoBehaviour, IPoolingObject
+    public abstract class qtPoolingObject : MonoBehaviour, IPoolingObject
     {
         public abstract object ObjectPoolID { get; }
 

@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace qtLib.Helper
+namespace qtLib.Editor
 {
     [InitializeOnLoad]
     public static class qtTools
@@ -20,7 +20,7 @@ namespace qtLib.Helper
             enabled = EditorPrefs.GetBool(MenuName, false);
         }
 
-        [MenuItem(MenuName)]
+        [MenuItem(MenuName, priority = 1)]
         private static void Toggle()
         {
             enabled = !enabled;
@@ -28,14 +28,14 @@ namespace qtLib.Helper
             Menu.SetChecked(MenuName, enabled);
         }
 
-        [MenuItem(MenuName, true)]
+        [MenuItem(MenuName, true, priority = 1)]
         private static bool ToggleValidate()
         {
             Menu.SetChecked(MenuName, enabled);
             return true;
         }
         
-        [MenuItem("qtTools/Clear/Clear PlayerPrefs")]
+        [MenuItem("qtTools/Clear/Clear PlayerPrefs", priority = 0)]
         public static void ClearPlayerPrefs()
         {
             PlayerPrefs.DeleteAll();
@@ -43,7 +43,7 @@ namespace qtLib.Helper
             Debug.Log("<color=yellow>✔ PlayerPrefs cleared.</color>");
         }
 
-        [MenuItem("qtTools/Clear/Clear PersistentDataPath")]
+        [MenuItem("qtTools/Clear/Clear PersistentDataPath", priority = 0)]
         public static void ClearPersistentData()
         {
             string path = Application.persistentDataPath;

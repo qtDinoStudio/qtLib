@@ -1,15 +1,11 @@
-﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace qtLib.Helper
+namespace qtLib.Singleton
 {
-    public class qtHiddenSingleton<T> : MonoBehaviour, IManualInit where T : MonoBehaviour
+    public abstract class qtSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
-        protected static T _instance
-        {
-            get;
-            private set;
-        }
+        private static T _instance;
+        public static T Instance => _instance;
     
         private void Awake()
         {
@@ -25,10 +21,5 @@ namespace qtLib.Helper
         }
         
         protected virtual void _Init(){}
-
-        public virtual UniTask ManualInit()
-        {
-            return UniTask.CompletedTask;
-        }
     }
 }

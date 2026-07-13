@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using qtLib.Helper;
+using qtLib.Singleton;
 
 namespace qtLib.Ads
 {
-    public partial class AdsManager : qtSingleton<AdsManager>
+    public partial class AdsManager : qtSingleton<AdsManager>, IManualInit
     {
         public enum AdPosition
         {
@@ -47,7 +49,7 @@ namespace qtLib.Ads
         #endregion
 
         #region ----- Public Function -----
-
+        
         public void Subscribe((AdType adType, AdPosition adPosition) adInfor, EvtAdReadyCallback listener)
         {
             _dictAdEvent.TryAdd(adInfor, new List<EvtAdReadyCallback>());

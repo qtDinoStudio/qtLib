@@ -16,6 +16,7 @@ MonoBehaviour:
     keys:
     - 2cda990e2423bbf4892e6590ba056729
     - 40470aeadfdb4a14981ba560a109883d
+    - ba92a532598aafd4b84e796f0e492d30
     values:
     - goDatas_byGlobalId:
         keys:
@@ -50,6 +51,9 @@ MonoBehaviour:
           iconNameOrGuid: cs Script Icon
           isIconRecursive: 0
           isColorRecursive: 0
+    - goDatas_byGlobalId:
+        keys: []
+        values: []
     - goDatas_byGlobalId:
         keys: []
         values: []

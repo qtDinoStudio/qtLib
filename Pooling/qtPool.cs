@@ -1,9 +1,8 @@
-using qtLib.Game.Object;
 using UnityEngine.Pool;
 
-namespace qtLib.Game.Controller
+namespace qtLib.Pooling
 {
-    public abstract class SystemPool<T> : IObjectPool<T> where T : PoolingObject
+    public abstract class qtPool<T> : IObjectPool<T> where T : qtPoolingObject
     {
         #region ----- Component Config -----
 
@@ -12,24 +11,24 @@ namespace qtLib.Game.Controller
         protected virtual int MaxPoolSize() => 20;
         protected virtual int DefaultPoolSize() => 20;
 
-        private IObjectPool<T> _pool;
-        public int CountInactive => _pool.CountInactive;
+        private IObjectPool<T> _objectPool;
+        public int CountInactive => _objectPool.CountInactive;
 
         #endregion
         
         #region ----- Property -----
 
-        protected IObjectPool<T> Pool
+        protected IObjectPool<T> ObjectPool
         {
             get
             {
-                if (_pool == null)
+                if (_objectPool == null)
                 {
-                    _pool = new ObjectPool<T>(CreatePooledItem, _OnTakeFromPool, _OnReturnedToPool,
+                    _objectPool = new ObjectPool<T>(CreatePooledItem, _OnTakeFromPool, _OnReturnedToPool,
                         _OnDestroyPoolObject, CollectionChecks(), DefaultPoolSize(), MaxPoolSize());
                 }
 
-                return _pool;
+                return _objectPool;
             }
         }
 
@@ -65,25 +64,25 @@ namespace qtLib.Game.Controller
 
         public T Get()
         {
-            return Pool.Get();
+            return ObjectPool.Get();
         }
 
         public PooledObject<T> Get(out T v)
         {
-            return Pool.Get(out v);
+            return ObjectPool.Get(out v);
         }
 
         public void Release(T element)
         {
-            lock (Pool)
+            lock (ObjectPool)
             {
-                Pool.Release(element);
+                ObjectPool.Release(element);
             }
         }
 
         public void Clear()
         {
-            Pool.Clear();
+            ObjectPool.Clear();
         }
 
 

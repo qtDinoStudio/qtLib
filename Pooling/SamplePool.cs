@@ -1,14 +1,13 @@
 using System;
-using qtLib.Game.Object;
 using UnityEngine;
 
-namespace qtLib.Game.Controller
+namespace qtLib.Pooling
 {
-    public class SamplePool : SystemPool<PoolingObject>
+    public class SamplePool : qtPool<qtPoolingObject>
     {
         #region ----- Component Config -----
 
-        private PoolingObject _prefab;
+        private qtPoolingObject _prefab;
 
         #endregion
         
@@ -20,9 +19,9 @@ namespace qtLib.Game.Controller
         }
 
         #endregion
-        protected override PoolingObject CreatePooledItem()
+        protected override qtPoolingObject CreatePooledItem()
         {
-            PoolingObject go = GameObject.Instantiate(_prefab);
+            qtPoolingObject go = GameObject.Instantiate(_prefab);
             go.transform.position = Vector3.zero;
             return go;
         }

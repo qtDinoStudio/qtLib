@@ -1,4 +1,5 @@
 using qtLib.Helper;
+using qtLib.Singleton;
 
 namespace qtLib.IAP
 {
