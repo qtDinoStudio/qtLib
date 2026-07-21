@@ -20,7 +20,7 @@ namespace qtLib.Editor
             enabled = EditorPrefs.GetBool(MenuName, false);
         }
 
-        [MenuItem(MenuName, priority = 1)]
+        [MenuItem(MenuName, priority = 20)]
         private static void Toggle()
         {
             enabled = !enabled;
@@ -28,7 +28,7 @@ namespace qtLib.Editor
             Menu.SetChecked(MenuName, enabled);
         }
 
-        [MenuItem(MenuName, true, priority = 1)]
+        [MenuItem(MenuName, true, priority = 20)]
         private static bool ToggleValidate()
         {
             Menu.SetChecked(MenuName, enabled);

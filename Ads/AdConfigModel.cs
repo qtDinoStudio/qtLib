@@ -36,7 +36,7 @@ namespace qtLib.Ads
 
                 public AdsManager.AdPosition adPosition => _adPosition;
 
-#if TEST_ADS
+#if IS_TEST_ADS
 #if UNITY_EDITOR
                 public string adUnitID => _editorAdrAdUnitID;
 #elif UNITY_ANDROID

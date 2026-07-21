@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using UnityEngine;
 
-namespace qtLib.Helper
+namespace qtLib.CustomDebug
 {
     public static class qtDebug
     {
         [HideInCallstack]
-        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_CUSTOM_DEBUG")]
         public static void Log(
             object message,
             UnityEngine.Object context = null)
@@ -16,7 +16,7 @@ namespace qtLib.Helper
         }
         
         [HideInCallstack]
-        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_CUSTOM_DEBUG")]
         public static void LogWarning(
             string message,
             UnityEngine.Object context = null)
@@ -25,7 +25,7 @@ namespace qtLib.Helper
         }
 
         [HideInCallstack]
-        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_CUSTOM_DEBUG")]
         public static void LogError(
             string message,
             UnityEngine.Object context = null)
@@ -34,7 +34,7 @@ namespace qtLib.Helper
         }
         
         [HideInCallstack]
-        [Conditional("ENABLE_LOG")]
+        [Conditional("ENABLE_CUSTOM_DEBUG")]
         public static void Log(
             LogType type,
             object message,

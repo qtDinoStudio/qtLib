@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using qtLib.CustomDebug;
 using UnityEngine;
 
 namespace qtLib.Helper
@@ -21,13 +22,13 @@ namespace qtLib.Helper
 
         #region ----- Public Function
         
-        public static qtDependencyInjection Instance
+        private static qtDependencyInjection Instance
         {
             get
             {
                 if (_shuttingDown)
                 {
-                    Debug.LogWarning("[Singleton] Instance '" + typeof(qtDependencyInjection) +
+                    qtDebug.LogWarning("[Singleton] Instance '" + typeof(qtDependencyInjection) +
                                      "' already destroyed. Returning null.");
                     return null;
                 }
@@ -71,7 +72,7 @@ namespace qtLib.Helper
                     objDictionary[id] = obj;
                     if (value != null)
                     {
-                        Debug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name +
+                        qtDebug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name +
                                          "> ID \""
                                          + id + "\" already exist!");
                         return;
@@ -103,7 +104,7 @@ namespace qtLib.Helper
                     objDictionary[id] = obj;
                     if (value != null)
                     {
-                        Debug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name +
+                        qtDebug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name +
                                          "> ID \""
                                          + id + "\" already exist!");
                         return;
@@ -130,7 +131,7 @@ namespace qtLib.Helper
 
             if (typeDictionary.ContainsKey(type) == false)
             {
-                Debug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name + "> ID \""
+                qtDebug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name + "> ID \""
                                  + id + "\" doesn't exist! Typo?");
                 return default;
             }
@@ -138,7 +139,7 @@ namespace qtLib.Helper
             var objDictionary = typeDictionary[type];
             if (objDictionary.ContainsKey(id) == false)
             {
-                Debug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name + "> ID \""
+                qtDebug.LogWarning("[qtDependencyInjection] Global component of type <" + typeof(T).Name + "> ID \""
                                  + id + "\" doesn't exist! Typo?");
                 return default;
             }

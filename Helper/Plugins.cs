@@ -6,7 +6,7 @@ namespace qtLib.Helper
     {
         private void Awake()
         {
-#if ENABLE_LOG
+#if ENABLE_CUSTOM_DEBUG
             // SRDebug.Init();
 #endif
         }

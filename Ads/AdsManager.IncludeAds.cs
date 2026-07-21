@@ -3,7 +3,7 @@ using qtLib.Helper;
 using qtLib.IAP;
 using UnityEngine;
 
-#if INCLUDE_ADS
+#if ENABLE_ADS
 using _Scripts.Data;
 using _Scripts.GameFirebase;
 using _Scripts.Entities;
@@ -19,7 +19,7 @@ namespace qtLib.Ads
 
         [SerializeField] private AdConfigModel _adConfigData;
 
-#if INCLUDE_ADS
+#if ENABLE_ADS
         private IAdService _adService = new AdmobService();
 #endif
 
@@ -29,7 +29,7 @@ namespace qtLib.Ads
 
         #region ----- Properties -----
 
-#if INCLUDE_ADS
+#if ENABLE_ADS
         public bool IsRemoveAds => UserData.Instance.IsRemoveAds();
 #else
         public bool IsRemoveAds => false;
@@ -37,7 +37,7 @@ namespace qtLib.Ads
 
         #endregion
 
-#if INCLUDE_ADS
+#if ENABLE_ADS
 
         #region ------ Implement Function -----
 

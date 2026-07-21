@@ -5,7 +5,7 @@ namespace qtLib.Ads
 {
     public partial class AdsManager
     {
-#if !INCLUDE_ADS
+#if !ENABLE_ADS
 
         public UniTask ManualInit()
         {

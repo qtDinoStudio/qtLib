@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
-using qtLib.Helper;
 using qtLib.Singleton;
 
 namespace qtLib.Ads

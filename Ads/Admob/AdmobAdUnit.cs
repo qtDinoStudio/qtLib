@@ -1,4 +1,4 @@
-#if INCLUDE_ADS
+#if ENABLE_ADS
 
 using GoogleMobileAds.Api;
 using qtLib.Helper;

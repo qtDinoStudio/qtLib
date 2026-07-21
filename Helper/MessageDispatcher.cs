@@ -25,15 +25,12 @@ namespace qtLib.Helper
 
         public static void Register(EEvent @event, Action<MessageObject> listener)
         {
-            if (_dictListener.ContainsKey(@event))
-            {
-                _dictListener[@event].Add(listener);
-            }
-            else
+            if (!_dictListener.ContainsKey(@event))
             {
                 _dictListener.Add(@event, new List<Action<MessageObject>>());
-                _dictListener[@event].Add(listener);
             }
+
+            _dictListener[@event].Add(listener);
         }
 
         public static void UnRegister(EEvent @event, Action<MessageObject> listener)
@@ -46,12 +43,11 @@ namespace qtLib.Helper
 
         public static void SendMessage(EEvent @event, MessageObject param = null)
         {
-            if (_dictListener.ContainsKey(@event))
+            if (_dictListener.TryGetValue(@event, out var listeners))
             {
-                List<Action<MessageObject>> listeners = _dictListener[@event];
-                for (var i = 0; i < listeners.Count; i++)
+                foreach (Action<MessageObject> listener in listeners)
                 {
-                    listeners[i].Invoke(param);
+                    listener.Invoke(param);
                 }
             }
         }
